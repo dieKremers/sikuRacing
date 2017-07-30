@@ -1,0 +1,6 @@
+Einrichten:
+sudo raspi-config
+
+opencv:
+http://mitchtech.net/raspberry-pi-opencv/
+
