@@ -13,14 +13,15 @@ import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritablePixelFormat;
 
-public class OpenCvUtils 
+public final class OpenCvUtils 
 {
 	/**
 	 * 
-	 * @param image
-	 * @return
+	 * @param image: The Image that should be trasferred to a Matrix
+	 * @parame toGreyscale: If set to True the matrix will be returned in Greyscale
+	 * @return Matrix of Image in Greyscale
 	 */
-	public Mat imageToMat(Image image, Boolean toGreyscale) 
+	public static Mat imageToMat(Image image, boolean toGreyscale ) 
 	{
 	    int width = (int) image.getWidth();
 	    int height = (int) image.getHeight();
@@ -32,7 +33,9 @@ public class OpenCvUtils
 
 	    Mat mat = new Mat(height, width, CvType.CV_8UC4);
 	    mat.put(0, 0, buffer);
-	    Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
+	    if( toGreyscale ) {
+	    	Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
+	    }
 	    return mat;
 	}
     
@@ -43,7 +46,7 @@ public class OpenCvUtils
      *            the {@link Mat} representing the current frame
      * @return the {@link Image} to show
      */
-    public Image mat2Image(Mat frame) {
+    public static Image mat2Image(Mat frame) {
         // create a temporary buffer
         MatOfByte buffer = new MatOfByte();
         // encode the frame in the buffer, according to the PNG format

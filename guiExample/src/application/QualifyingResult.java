@@ -1,7 +1,5 @@
 package application;
 
-import java.util.Comparator;
-
 public class QualifyingResult 
 {
 	public String getRound() {

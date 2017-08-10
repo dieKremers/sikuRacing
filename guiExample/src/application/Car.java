@@ -37,6 +37,16 @@ public class Car
 		qualifyingTimes.sort(comparator);
 		return qualifyingTimes;
 	}
+	
+	public Double getBestQualifyingTime()
+	{
+		if( qualifyingTimes.size() > 0 )
+		{
+			return getSortedQualifyingTimes().get(0).getTime();
+		}
+		return 100.0;
+	}
+	
 	public void setQualifyingTime(double qualifyingTime) {
 		int count = qualifyingTimes.size();
 		QualifyingResult result = new QualifyingResult();
@@ -57,4 +67,23 @@ public class Car
 			return arg0.getTime().compareTo(arg1.getTime());
 		}
 	};
+
+	//kann vermutlich weg
+	public void addLapFinished(double time) 
+	{
+		RaceResult race = races.get( races.size() -1 );
+		int size = race.getLapTimes().size();
+		if( size == 0 )
+		{
+			race.getLapTimes().add( time );
+		}
+		else
+		{
+			double lastLapTime = race.getLapTimes().get( size-1 );
+			if( (time - lastLapTime) > 1.0 ) //Rundenzeit nur eintragen wenn letzter Zeitstempel mehr als eine Sekunde her ist
+			{
+				race.getLapTimes().add( time );
+			}
+		}
+	}
 }

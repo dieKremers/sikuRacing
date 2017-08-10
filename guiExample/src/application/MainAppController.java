@@ -1,13 +1,12 @@
 package application;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 import exceptions.NoValueEnteredException;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -23,13 +22,17 @@ import javafx.stage.Stage;
 public class MainAppController 
 {
 	private Stage primaryStage = null;
-	private List<Car> cars = new ArrayList<Car>();
-	private OpenCvUtils cvUtil = null;
+	private ArrayList<Car> cars = new ArrayList<Car>();
+	private ImageWorker imageWorker = new ImageWorker();
 	
 	@FXML
 	private Button createCarButton;
 	@FXML
 	private Button deleteCarButton;
+	@FXML
+	private Button buttonStartQualifying;
+	@FXML
+	private Button removeQualifyingButton;
 	@FXML
 	private ListView<String> carListView;
 	@FXML
@@ -41,8 +44,7 @@ public class MainAppController
 	
 	public MainAppController() 
 	{
-		super();
-		cvUtil = new OpenCvUtils();
+		super();		
 	}
 
 	@FXML
@@ -68,16 +70,11 @@ public class MainAppController
 			//Open Template Picture
 			FileChooser fileDialog = new FileChooser();
 			fileDialog.setTitle("Bitte Bild zum Wiedererkennen des Autos auswählen");
-			fileDialog.setInitialDirectory(new File(".\\..\\templates"));
+			fileDialog.setInitialDirectory(new File("C:\\projekte\\sikuRacing\\templates"));
 			File file = fileDialog.showOpenDialog(primaryStage);
 			Image value;
 			value = new Image(file.toURI().toURL().toString());
-			car.setCarMask(cvUtil.imageToMat( value, true ));
-			
-			//TODO: Remove this. Just to have some sample Qualifying Results
-			car.setQualifyingTime(23);
-			car.setQualifyingTime(88);
-			car.setQualifyingTime(42);
+			car.setCarMask(OpenCvUtils.imageToMat( value, true ));
 			cars.add(car);
 			updateCarListView();
 		} catch (Exception e) 
@@ -113,10 +110,42 @@ public class MainAppController
 		}
 	}
 	
+	@FXML
+	public void runQualifying() throws InterruptedException
+	{
+		int index  = carListView.getSelectionModel().getSelectedIndex();
+		if( index >= 0 )
+		{
+			Car car = cars.get(index);
+			imageWorker.startRace( cars, true );
+			while( imageWorker.isRaceRunning() )
+			{
+				Thread.sleep(100);
+			}
+			double lapTime = imageWorker.getFinishTime() - imageWorker.getStartTime();
+			car.setQualifyingTime(lapTime);
+			updateMainFrame( car );
+			updateCarListView();
+		}		
+	}
+	
+	@FXML
+	public void removeQualifyingTime()
+	{
+		
+		int timeIndex  = qualifyingTimesListView.getSelectionModel().getSelectedIndex();
+		int carIndex  = carListView.getSelectionModel().getSelectedIndex();
+		if( timeIndex >= 0 && carIndex >= 0 )
+		{
+			cars.get( carIndex ).getSortedQualifyingTimes().remove(timeIndex);
+		}
+		updateCarListView();		
+	}
+	
 	private void updateMainFrame(Car car) 
 	{
 		driverNameTextField.setText( car.getDriverName() );
-		carTemplateImage.setImage( cvUtil.mat2Image( car.getCarMask() ));
+		carTemplateImage.setImage( OpenCvUtils.mat2Image( car.getCarMask() ));
 		qualifyingTimesListView.getItems().clear();
 		for( QualifyingResult result : car.getSortedQualifyingTimes() )
 		{
@@ -127,7 +156,7 @@ public class MainAppController
 	private void updateCarListView() 
 	{
 		carListView.getItems().clear();
-		for( Car car : cars )
+		for( Car car : getCarsSortedByQualifyingTimes() )
 		{
 			carListView.getItems().add( car.getDriverName() );			
 		}
@@ -137,4 +166,22 @@ public class MainAppController
 	{
 		primaryStage = _primaryStage;		
 	}
+	
+	public void shutdown()
+	{
+		imageWorker.shutdown();
+	}
+	
+	public List<Car> getCarsSortedByQualifyingTimes() 
+	{
+		cars.sort(carComparator);
+		return cars;
+	}
+	
+	Comparator<Car> carComparator = new Comparator<Car>(){
+		@Override
+		public int compare(Car arg0, Car arg1) {
+			return arg0.getBestQualifyingTime().compareTo(arg1.getBestQualifyingTime());
+		}
+	};
 }

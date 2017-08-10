@@ -4,16 +4,16 @@ import org.opencv.core.Core;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
 
 
 public class Main extends Application {
+	MainAppController controller = null;
 	@Override
 	public void start(Stage primaryStage) {
-		MainAppController controller = null;
+		
 		System.loadLibrary( Core.NATIVE_LIBRARY_NAME );
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("MainApp.fxml") );
@@ -27,6 +27,13 @@ public class Main extends Application {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public void stop()
+	{
+	    System.out.println("Stage is closing");
+	    controller.shutdown();
 	}
 	
 	public static void main(String[] args) {
