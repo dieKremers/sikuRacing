@@ -8,9 +8,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainAppController">
+<AnchorPane prefHeight="600.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainAppController">
    <children>
-      <SplitPane dividerPositions="0.29797979797979796" prefHeight="577.0" prefWidth="781.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0">
+      <SplitPane dividerPositions="0.19324894514767932" prefHeight="577.0" prefWidth="1187.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0">
         <items>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="544.0" prefWidth="182.0">
                <children>
@@ -19,15 +19,15 @@
                   <Button fx:id="deleteCarButton" layoutX="137.0" layoutY="522.0" mnemonicParsing="false" onAction="#deleteCar" text="Delete Car" />
                </children>
             </AnchorPane>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="525.0" prefWidth="544.0">
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="575.0" prefWidth="948.0">
                <children>
-                  <TabPane prefHeight="575.0" prefWidth="544.0" tabClosingPolicy="UNAVAILABLE">
+                  <TabPane prefHeight="575.0" prefWidth="946.0" tabClosingPolicy="UNAVAILABLE">
                     <tabs>
                       <Tab text="Fahrer Details">
                            <content>
                               <AnchorPane prefHeight="504.0" prefWidth="513.0">
                                  <children>
-                                    <ImageView fx:id="carTemplateImage" fitHeight="95.0" fitWidth="116.0" layoutX="242.0" layoutY="15.0" pickOnBounds="true" preserveRatio="true" />
+                                    <ImageView fx:id="carTemplateImage" fitHeight="95.0" fitWidth="116.0" layoutX="809.0" layoutY="15.0" pickOnBounds="true" preserveRatio="true" />
                                     <TextField fx:id="driverNameTextField" editable="false" layoutX="14.0" layoutY="14.0" prefHeight="25.0" prefWidth="200.0">
                                        <font>
                                           <Font name="System Bold" size="14.0" />
@@ -37,17 +37,26 @@
                                     <ListView fx:id="qualifyingTimesListView" layoutX="14.0" layoutY="71.0" prefHeight="147.0" prefWidth="200.0" />
                                     <Button fx:id="removeQualifyingButton" layoutX="128.0" layoutY="231.0" mnemonicParsing="false" onAction="#removeQualifyingTime" prefHeight="25.0" prefWidth="88.0" text="Remove" />
                                     <Button fx:id="buttonStartQualifying" layoutX="14.0" layoutY="231.0" mnemonicParsing="false" onAction="#runQualifying" text="Start Qualifying" />
-                                    <TableView layoutX="19.0" layoutY="286.0" prefHeight="222.0" prefWidth="509.0">
-                                      <columns>
-                                        <TableColumn prefWidth="75.0" text="C1" />
-                                        <TableColumn prefWidth="75.0" text="C2" />
-                                      </columns>
-                                    </TableView>
+                                    <TableView fx:id="racesOfCarTable" layoutX="240.0" layoutY="34.0" prefHeight="222.0" prefWidth="509.0" />
                                  </children>
                               </AnchorPane>
                            </content>
                         </Tab>
-                      <Tab text="Rennen" />
+                      <Tab fx:id="tabRennen" onSelectionChanged="#tabRennenSelected" text="Rennen">
+                           <content>
+                              <AnchorPane prefHeight="546.0" prefWidth="662.0">
+                                 <children>
+                                    <Button fx:id="startRaceButton" layoutX="20.0" layoutY="14.0" mnemonicParsing="false" onAction="#startRace" prefHeight="25.0" prefWidth="104.0" text="Rennen starten" />
+                                    <Button fx:id="stopRaceButton" layoutX="20.0" layoutY="47.0" mnemonicParsing="false" onAction="#stopRace" text="Rennen stoppen" />
+                                    <TableView fx:id="raceTable" layoutX="14.0" layoutY="95.0" prefHeight="234.0" prefWidth="925.0" />
+                                    <TextField fx:id="textRaceStatus" alignment="CENTER" editable="false" layoutX="241.0" layoutY="14.0" prefHeight="31.0" prefWidth="285.0" text="warte ...">
+                                       <font>
+                                          <Font name="Comic Sans MS Bold" size="14.0" />
+                                       </font>
+                                    </TextField>
+                                 </children>
+                              </AnchorPane>
+                           </content></Tab>
                     </tabs>
                   </TabPane>
                </children>

@@ -6,3 +6,5 @@ guiExample/\.settings/
 guiExample/build\.fxbuild
 
 guiExample/\.project
+
+logging/

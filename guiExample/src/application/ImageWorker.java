@@ -14,6 +14,7 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.imgproc.Imgproc;
 
@@ -32,10 +33,13 @@ public class ImageWorker
 	private String raceStartFile = "start_race.txt";
 	private String raceFinishedFile = "finished";
 	private String startTimeFile = "startTime";
+    private boolean saveImages = true;
+    private double templateThreshold = 0.80;
+    
 	private ArrayList<Car> cars = new ArrayList<Car>();
-	private Hashtable<Car,ArrayList<Double>> results = new Hashtable<Car, ArrayList<Double>>();
+	private Race currentRace = null;
 	private static int idleTick = 250;
-	private static int raceTick = 10;
+	private static int raceTick = 50;
 	private Double startTime = 0.0;
 	private Double finishTime = 0.0;
 	private boolean raceRunning = false;
@@ -60,16 +64,27 @@ public class ImageWorker
 	{
 		cars = _cars;
 		raceRunning = true;
-		results.clear();
+		if( isQualifying ) {
+			currentRace = null;			
+		}
+		else {
+			currentRace = new Race( cars );	
+		}
 		frameGrabberTimer.scheduleAtFixedRate(frameGrabber, 0, raceTick, TimeUnit.MILLISECONDS);
 		imageWorkerTimer.scheduleAtFixedRate(imageWorker, 0, raceTick, TimeUnit.MILLISECONDS);		
 		startRaspberry( isQualifying );
 	}
 	
-	public void stopRace()
+	public void stopRace() throws InterruptedException
 	{
 		raceRunning = false;
 		stopRaspberry();
+		File[] files = imageFolder.listFiles( pngFilter );
+		while( files.length > 0 )
+		{
+			Thread.sleep(100);
+			files = imageFolder.listFiles( pngFilter );
+		}
 		frameGrabberTimer.scheduleAtFixedRate(frameGrabber, 0, idleTick, TimeUnit.MILLISECONDS);
 		imageWorkerTimer.scheduleAtFixedRate(imageWorker, 0, idleTick, TimeUnit.MILLISECONDS);				
 	}
@@ -104,6 +119,7 @@ public class ImageWorker
 			@Override
 			public void run() 
 			{
+				boolean stopRace = false;
 				try {
 					files = imageFolder.listFiles( pngFilter );
 					if( files.length == 0 )
@@ -119,11 +135,13 @@ public class ImageWorker
 						if( file.getName().contains(startTimeFile))
 						{
 							startTime = imgTime;
+							if( currentRace != null )
+								currentRace.setStartTime(imgTime);
 						}
 						else if (file.getName().contains(raceFinishedFile))
 						{
 							finishTime = imgTime;
-							stopRace();
+							stopRace = true;
 						}
 						else
 						{
@@ -134,8 +152,14 @@ public class ImageWorker
 					}
 					long dt = System.currentTimeMillis() - frameGrabberStartTime;
 					System.out.println("Bildbearbeitungszeit: " + dt/numberOfFiles + "ms per file");
-					
+					if( stopRace )
+					{
+						stopRace();
+					}
 				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -150,7 +174,7 @@ public class ImageWorker
 	{
 		imageWorker = new Runnable() 
 		{
-	        @Override public void run() 
+			@Override public void run() 
 	        { 
 	        	while( pictureList.picturesAvailable() )
 				{
@@ -162,48 +186,6 @@ public class ImageWorker
 				}
 	        }
 
-			private void checkPictureForCar(Car car, Picture pic) 
-			{
-				// Initialize Variables
-    			Mat result = new Mat();
-				int method = Imgproc.TM_CCORR_NORMED;
-				double percentage = 0.1;
-				String percentageInfo;
-				Point location;
-				
-				Mat frame = pic.getMat();
-				Mat template = car.getCarMask();
-				
-				//Template suchen
-				Imgproc.matchTemplate(frame, template, result, method);	
-				
-				//Ergebnis auswerten
-				MinMaxLocResult mmlresult = Core.minMaxLoc(result);
-				if( method == Imgproc.TM_SQDIFF_NORMED )
-				{
-					percentage = 1-mmlresult.minVal;
-					location = mmlresult.minLoc;
-				}
-				else
-				{
-					percentage = mmlresult.maxVal;
-					location = mmlresult.maxLoc;
-				}
-				percentageInfo = String.format("Percentage: %.2f", percentage);
-				
-				//Ergebnis ins Bild eintragen
-				if( percentage > 0.9 )
-				{
-					addTimeToResults(car, pic.getTime() );
-					Point point2 = new Point();
-					Point point4 = new Point(10,80);
-					point2.x = location.x + template.width();
-					point2.y = location.y + template.height();
-					Scalar colour = new Scalar(Imgproc.COLORMAP_PINK);
-					Imgproc.rectangle(frame, location, point2, colour);
-					Imgproc.putText(frame, percentageInfo , point4 , 0, 1, colour);
-				}
-			}
 		};
 		imageWorkerTimer = Executors.newSingleThreadScheduledExecutor();
         imageWorkerTimer.scheduleAtFixedRate(imageWorker, 0, idleTick, TimeUnit.MILLISECONDS);
@@ -217,36 +199,12 @@ public class ImageWorker
 		return time;
 	}
 	
-	private void addTimeToResults( Car car, double time )
+	public Race getCurrentRaceData()
 	{
-		if( results.containsKey( car ) )
-		{
-			ArrayList<Double> times = results.get(car);
-			int size = times.size();
-			if( size == 0 )
-			{
-				times.add( time );
-			}
-			else
-			{
-				double lastLapTime = times.get( size-1 );
-				if( (time - lastLapTime) > 1.0 ) //Rundenzeit nur eintragen wenn letzter Zeitstempel mehr als eine Sekunde her ist
-				{
-					times.add( time );
-				}
-			}
-			if( size != times.size())
-			{
-				results.put(car, times);
-			}
-		}
-		else
-		{
-			ArrayList<Double> times = new ArrayList<Double>();
-			times.add( time );
-			results.put( car,  times );
-		}
+		return currentRace;
 	}
+	
+
 	
 	private void startRaspberry( boolean isQualifying )
 	{
@@ -278,4 +236,65 @@ public class ImageWorker
 		if( qualifyingFile.exists() ) qualifyingFile.delete();
 		if( finishFile.exists()) finishFile.delete();
 	}
+	
+	private void checkPictureForCar(Car car, Picture pic) 
+	{
+		int method = Imgproc.TM_CCOEFF_NORMED;
+		double percentage = 0.0;
+		String percentageInfo;
+		Point location;
+		Mat frame = new Mat();
+		Mat result = new Mat();
+		Mat template = car.getCarMask().clone();
+		for( int i = 0; i < 3; i++ )
+		{
+			if( i == 0 ) {
+				frame = pic.getMat().clone();
+			}
+			if( i == 1 ) {
+				frame = OpenCvUtils.rotate(pic.getMat(), 20 ).clone();
+			}
+			if( i == 2 ) {
+				frame = OpenCvUtils.rotate(pic.getMat(), -20 ).clone(); 
+			}
+			//Template suchen
+			Imgproc.matchTemplate(frame, template, result, method);	
+			
+			//Ergebnis auswerten
+			MinMaxLocResult mmlresult = Core.minMaxLoc(result);
+			if( method == Imgproc.TM_SQDIFF_NORMED )
+			{
+				percentage = 1-mmlresult.minVal;
+				location = mmlresult.minLoc;
+			}
+			else
+			{
+				percentage = mmlresult.maxVal;
+				location = mmlresult.maxLoc;
+			}
+			percentageInfo = String.format("Percentage: %.2f", percentage);
+			
+			//add result to current Race data and create picture for debugging 
+			if( percentage > templateThreshold )
+			{
+				currentRace.addLap( car, pic.getTime() );
+				if( saveImages )
+				{
+					Point point2 = new Point();
+					Point point4 = new Point(10,80);
+					point2.x = location.x + template.width();
+					point2.y = location.y + template.height();
+					Scalar colour = new Scalar(Imgproc.COLORMAP_PINK);
+					Imgproc.rectangle(frame, location, point2, colour);
+					Imgproc.putText(frame, percentageInfo , point4 , 0, 1, colour);
+					String filename = "C:\\projekte\\sikuRacing\\logging\\" + car.getDriverName() + "_"  +i+ "_" + (pic.getTime()-startTime) + ".png";
+					Imgcodecs.imwrite(filename, frame);		
+				}
+			}
+			if( percentage > templateThreshold ) {
+				break;
+			}
+		}
+	}
+
 }

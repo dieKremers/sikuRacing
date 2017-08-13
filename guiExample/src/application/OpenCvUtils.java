@@ -6,6 +6,8 @@ import java.nio.ByteBuffer;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
+import org.opencv.core.Point;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
@@ -54,5 +56,16 @@ public final class OpenCvUtils
         // build and return an Image created from the image encoded in the
         // buffer
         return new Image(new ByteArrayInputStream(buffer.toArray()));
+    }
+    
+    public static Mat rotate(Mat src, double angle )
+    {
+        int cols = src.cols();
+        int rows = src.rows();
+        Point pt = new Point(cols/2, rows/2);
+        Mat r = Imgproc.getRotationMatrix2D(pt, angle, 1.0);
+        Mat dst = new Mat();
+        Imgproc.warpAffine(src, dst, r, new Size(cols, rows));
+        return dst;
     }
 }
