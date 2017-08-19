@@ -37,6 +37,7 @@ public class ImageWorker
     private double templateThreshold = 0.80;
     
 	private ArrayList<Car> cars = new ArrayList<Car>();
+	private Hashtable<Car, Mat> carMats = new Hashtable<Car, Mat>();
 	private Race currentRace = null;
 	private static int idleTick = 250;
 	private static int raceTick = 50;
@@ -63,6 +64,7 @@ public class ImageWorker
 	public void startRace( ArrayList<Car> _cars, boolean isQualifying )
 	{
 		cars = _cars;
+		loadCarPictures();
 		raceRunning = true;
 		if( isQualifying ) {
 			currentRace = null;			
@@ -75,6 +77,20 @@ public class ImageWorker
 		startRaspberry( isQualifying );
 	}
 	
+	private void loadCarPictures() 
+	{
+		for( Car car : cars )
+		{
+			try {
+				Image value;
+				value = new Image(car.getCarMask().toURI().toURL().toString());
+				carMats.put(car, OpenCvUtils.imageToMat( value, true ));
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	public void stopRace() throws InterruptedException
 	{
 		raceRunning = false;
@@ -245,7 +261,7 @@ public class ImageWorker
 		Point location;
 		Mat frame = new Mat();
 		Mat result = new Mat();
-		Mat template = car.getCarMask().clone();
+		Mat template = carMats.get(car).clone();
 		for( int i = 0; i < 3; i++ )
 		{
 			if( i == 0 ) {
@@ -295,6 +311,32 @@ public class ImageWorker
 				break;
 			}
 		}
+	}
+
+	/**
+	 * Creates a file in the shared folder and Raspberry should delete it if it's available.
+	 * @return
+	 */
+	public boolean checkConnection() {
+		File file = new File(imageFolder+"\\checkConnection.txt" );
+		try {
+			file.createNewFile();
+			Thread.sleep(2000);
+			if( file.exists() )
+			{
+				file.delete();
+				return false;
+			}
+			return true;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

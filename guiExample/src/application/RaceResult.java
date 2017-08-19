@@ -1,12 +1,15 @@
 package application;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import javafx.beans.property.SimpleStringProperty;
-
-public class RaceResult 
+public class RaceResult implements Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2L;
 	private String stringRaceId;
 	private String stringPoints;
 	private String stringPosition;

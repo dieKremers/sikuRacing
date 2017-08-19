@@ -20,7 +20,7 @@ public class Main extends Application {
 			AnchorPane root = (AnchorPane) loader.load();
 			controller = loader.getController();
 			controller.setStage(primaryStage);
-			Scene scene = new Scene(root,1200,600);
+			Scene scene = new Scene(root,1200,620);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
 			primaryStage.show();

@@ -10,7 +10,7 @@
 
 <AnchorPane prefHeight="600.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainAppController">
    <children>
-      <SplitPane dividerPositions="0.19324894514767932" prefHeight="577.0" prefWidth="1187.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0">
+      <SplitPane dividerPositions="0.19324894514767932" layoutX="7.0" layoutY="36.0" prefHeight="556.0" prefWidth="1187.0" AnchorPane.leftAnchor="7.0" AnchorPane.topAnchor="36.0">
         <items>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="544.0" prefWidth="182.0">
                <children>
@@ -63,5 +63,28 @@
             </AnchorPane>
         </items>
       </SplitPane>
+      <MenuBar prefHeight="25.0" prefWidth="1187.0">
+        <menus>
+          <Menu mnemonicParsing="false" text="File">
+            <items>
+                  <MenuItem fx:id="menuLoad" mnemonicParsing="false" onAction="#loadData" text="Load" />
+                  <MenuItem fx:id="menuSave" mnemonicParsing="false" onAction="#saveData" text="Save" />
+                  <MenuItem fx:id="menuFileCheckConnection" mnemonicParsing="false" onAction="#checkConnection" text="Check Connection" />
+              <MenuItem mnemonicParsing="false" text="Close" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Edit">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Delete" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Help">
+            <items>
+              <MenuItem mnemonicParsing="false" text="About" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+      <Label fx:id="labelConnectionStatus" layoutX="14.0" layoutY="590.0" prefHeight="17.0" prefWidth="676.0" />
    </children>
 </AnchorPane>

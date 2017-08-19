@@ -1,7 +1,13 @@
 package application;
 
-public class QualifyingResult 
+import java.io.Serializable;
+
+public class QualifyingResult implements Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public String getRound() {
 		return round;
 	}

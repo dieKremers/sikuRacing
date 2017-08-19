@@ -1,6 +1,12 @@
 package application;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,7 +21,9 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -24,7 +32,9 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.Paint;
 import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 
 public class MainAppController 
@@ -34,7 +44,16 @@ public class MainAppController
 	private ArrayList<Car> sortedCars = new ArrayList<Car>();
 	private ImageWorker imageWorker = new ImageWorker();
 	private int raceCounter = 0;
+
 	
+	@FXML
+	private MenuItem menuSave;
+	@FXML
+	private MenuItem menuLoad;
+	@FXML
+	private MenuItem menuFileCheckConnection;
+	@FXML
+	private Label labelConnectionStatus;
 	@FXML
 	private Button createCarButton;
 	@FXML
@@ -68,6 +87,63 @@ public class MainAppController
 	}
 
 	@FXML
+	public void saveData() throws IOException {
+		 FileChooser fileChooser = new FileChooser();
+		 fileChooser.setTitle("Select Folder and File");
+		 fileChooser.getExtensionFilters().addAll(
+		         new ExtensionFilter("Siku Racing Files", "*.srf"));
+		 File selectedFile = fileChooser.showSaveDialog(primaryStage);
+		 if (selectedFile != null) {
+			FileOutputStream f = new FileOutputStream(selectedFile);
+			ObjectOutputStream o = new ObjectOutputStream(f);
+			o.writeObject(cars);
+			o.close();
+			f.close();
+		 }
+	}
+	
+	@FXML
+	public void loadData() {
+		 FileChooser fileChooser = new FileChooser();
+		 fileChooser.setTitle("Select Folder and File");
+		 fileChooser.getExtensionFilters().addAll(
+		         new ExtensionFilter("Siku Racing Files", "*.srf"));
+		 File selectedFile = fileChooser.showOpenDialog(primaryStage);
+		 if (selectedFile != null) {
+			try {
+				FileInputStream f = new FileInputStream(selectedFile);
+				ObjectInputStream i = new ObjectInputStream(f);
+				cars = (ArrayList<Car>) i.readObject();
+				i.close();
+				f.close();
+			} catch (IOException | ClassNotFoundException e) {
+				labelConnectionStatus.setText("Error reading File");
+				labelConnectionStatus.setTextFill( Paint.valueOf("BLACK"));
+				e.printStackTrace();
+			}
+		 }
+		 updateCarListView();
+	}
+	
+	@FXML
+	public void checkConnection()
+	{
+		labelConnectionStatus.setText("checking Connection ...");
+		labelConnectionStatus.setTextFill( Paint.valueOf("BLACK"));
+		
+		if( imageWorker.checkConnection() )
+		{
+			labelConnectionStatus.setText("Connection to Pi ok");
+			labelConnectionStatus.setTextFill( Paint.valueOf("GREEN"));
+		}
+		else
+		{
+			labelConnectionStatus.setText("NO Connection to PI !!!");
+			labelConnectionStatus.setTextFill( Paint.valueOf("RED"));
+		}
+	}
+	
+	@FXML
 	public void createNewCar()
 	{
 		try 
@@ -92,9 +168,7 @@ public class MainAppController
 			fileDialog.setTitle("Bitte Bild zum Wiedererkennen des Autos auswählen");
 			fileDialog.setInitialDirectory(new File("C:\\projekte\\sikuRacing\\templates"));
 			File file = fileDialog.showOpenDialog(primaryStage);
-			Image value;
-			value = new Image(file.toURI().toURL().toString());
-			car.setCarMask(OpenCvUtils.imageToMat( value, true ));
+			car.setCarMask( file );
 			cars.add(car);
 			updateCarListView();
 		} catch (Exception e) 
@@ -121,7 +195,7 @@ public class MainAppController
 	}
 
 	@FXML
-	public void carSelected()
+	public void carSelected() throws MalformedURLException
 	{
 		int index  = carListView.getSelectionModel().getSelectedIndex();
 		if( index >= 0 )
@@ -131,7 +205,7 @@ public class MainAppController
 	}
 	
 	@FXML
-	public void runQualifying() throws InterruptedException
+	public void runQualifying() throws InterruptedException, MalformedURLException
 	{
 		int index  = carListView.getSelectionModel().getSelectedIndex();
 		if( index >= 0 )
@@ -236,10 +310,12 @@ public class MainAppController
 		return list;
 	}
 
-	private void updateMainFrame(Car car) 
+	private void updateMainFrame(Car car) throws MalformedURLException 
 	{
 		driverNameTextField.setText( car.getDriverName() );
-		carTemplateImage.setImage( OpenCvUtils.mat2Image( car.getCarMask() ));
+		Image value;
+		value = new Image(car.getCarMask().toURI().toURL().toString());
+		carTemplateImage.setImage( value );
 		qualifyingTimesListView.getItems().clear();
 		for( QualifyingResult result : car.getSortedQualifyingTimes() )
 		{
