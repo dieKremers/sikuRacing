@@ -195,12 +195,75 @@ public class ImageWorker
 	        	while( pictureList.picturesAvailable() )
 				{
 					Picture pic = pictureList.getNext();
+					checkPicture( pic );
 					for( Car car : cars )
 					{
 						checkPictureForCar( car, pic);
 					}
 				}
 	        }
+
+			private void checkPicture(Picture pic) 
+			{
+				ArrayList<MatchResult> results = new ArrayList<MatchResult>();
+				// Hier iteriere ich durch alle Autos und suche für jedes Auto nach dem besten Treffer
+				for( Car car : cars )
+				{
+					MatchResult tempResult = checkPictureForCar(car, pic);
+					//Wenn ich noch keinen Treffer habe kann ich das direkt speichern
+					if( results.isEmpty() )
+					{
+						results.add(tempResult);
+						continue;
+					}
+					//Jetzt gucke ich ob ich zu der Position schon einen Treffer habe und ob der aktuelle Treffer besser ist. 
+					boolean locationAlreadyKnown = false;
+					for( int i = 0; i < results.size(); i++ )
+					{
+						if( results.get(i).isSameLocation(tempResult.getLocation() ))
+						{
+							locationAlreadyKnown = true;
+							if( results.get(i).getPercentage() < tempResult.getPercentage() )
+							{
+								results.set(i, tempResult );
+							}
+							break;
+						}
+					}
+					//Wenn ich an der Position noch nichts habe, dann speichere ich den Treffer
+					if( !locationAlreadyKnown )
+					{
+						results.add(tempResult);
+					}
+				}
+				
+				//Jetzt hab ich alle besten Treffer auf dem Bild
+				//Für alle Treffer > [templateThreshold] trage ich einen Treffer ein
+				for( MatchResult result : results )
+				{
+					//add result to current Race data and create picture for debugging 
+					if( result.getPercentage() > templateThreshold )
+					{
+						String percentageInfo = String.format("Percentage: %.2f", result.getPercentage() );
+						currentRace.addLap( result.getCar(), pic.getTime() );
+						if( saveImages )
+						{
+							Point location = result.getLocation();
+							Mat template = carMats.get(result.getCar());
+							Mat frame = result.getPicture();
+							Point point2 = new Point();
+							Point point4 = new Point(10,80);
+							point2.x = location.x + template.width();
+							point2.y = location.y + template.height();
+							Scalar colour = new Scalar(Imgproc.COLORMAP_PINK);
+							Imgproc.rectangle(frame, location, point2, colour);
+							Imgproc.putText(frame, percentageInfo , point4 , 0, 1, colour);
+							String filename = "C:\\projekte\\sikuRacing\\logging\\" + result.getCar().getDriverName() + "_"  + (pic.getTime()-startTime) + ".png";
+							Imgcodecs.imwrite(filename, frame);		
+						}
+					}	
+				}
+			}
 
 		};
 		imageWorkerTimer = Executors.newSingleThreadScheduledExecutor();
@@ -253,15 +316,15 @@ public class ImageWorker
 		if( finishFile.exists()) finishFile.delete();
 	}
 	
-	private void checkPictureForCar(Car car, Picture pic) 
+	private MatchResult checkPictureForCar(Car car, Picture pic) 
 	{
 		int method = Imgproc.TM_CCOEFF_NORMED;
 		double percentage = 0.0;
-		String percentageInfo;
 		Point location;
 		Mat frame = new Mat();
 		Mat result = new Mat();
 		Mat template = carMats.get(car).clone();
+		MatchResult matchResult = new MatchResult();
 		for( int i = 0; i < 3; i++ )
 		{
 			if( i == 0 ) {
@@ -288,29 +351,13 @@ public class ImageWorker
 				percentage = mmlresult.maxVal;
 				location = mmlresult.maxLoc;
 			}
-			percentageInfo = String.format("Percentage: %.2f", percentage);
-			
-			//add result to current Race data and create picture for debugging 
-			if( percentage > templateThreshold )
+			//check if current result is the best
+			if( percentage > matchResult.getPercentage() )
 			{
-				currentRace.addLap( car, pic.getTime() );
-				if( saveImages )
-				{
-					Point point2 = new Point();
-					Point point4 = new Point(10,80);
-					point2.x = location.x + template.width();
-					point2.y = location.y + template.height();
-					Scalar colour = new Scalar(Imgproc.COLORMAP_PINK);
-					Imgproc.rectangle(frame, location, point2, colour);
-					Imgproc.putText(frame, percentageInfo , point4 , 0, 1, colour);
-					String filename = "C:\\projekte\\sikuRacing\\logging\\" + car.getDriverName() + "_"  +i+ "_" + (pic.getTime()-startTime) + ".png";
-					Imgcodecs.imwrite(filename, frame);		
-				}
-			}
-			if( percentage > templateThreshold ) {
-				break;
+				matchResult = new MatchResult(percentage, location, frame.clone(), car );
 			}
 		}
+		return matchResult;
 	}
 
 	/**

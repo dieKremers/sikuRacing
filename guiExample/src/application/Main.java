@@ -23,6 +23,7 @@ public class Main extends Application {
 			Scene scene = new Scene(root,1200,620);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
+			primaryStage.setTitle("SIKU RACING App                   (by Michael Kremer 2017)");
 			primaryStage.show();
 		} catch(Exception e) {
 			e.printStackTrace();

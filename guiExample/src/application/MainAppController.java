@@ -122,6 +122,7 @@ public class MainAppController
 				e.printStackTrace();
 			}
 		 }
+		 raceCounter = cars.get(0).getRaces().size();
 		 updateCarListView();
 	}
 	
@@ -279,7 +280,7 @@ public class MainAppController
 	
 	private void updateRaceTable()
 	{
-		sortedCars = cars;
+		sortedCars = getClonedCarList();
 		if( raceCounter == 0 )
 		{
 			sortedCars.sort(carComparatorByQualifying);
@@ -287,7 +288,20 @@ public class MainAppController
 		else
 		{
 			sortedCars.sort(carComparatorByTotalPoints);
-			Collections.reverse(cars);
+			Collections.reverse(sortedCars);
+			//nach gleichen Punkten suchen und in dem Fall den Wagen mit der besseren Zeit im Qualifying nach oben schieben
+			for( int i = 0; i < (sortedCars.size()-1); i++ )
+			{
+				if( sortedCars.get(i).getTotalPoints() == sortedCars.get(i+1).getTotalPoints() )
+				{
+					if( sortedCars.get(i+1).getBestQualifyingTime() < sortedCars.get(i).getBestQualifyingTime() )
+					{
+						Car temp = sortedCars.get(i);
+						sortedCars.set(i, sortedCars.get(i+1));
+						sortedCars.set(i+1, temp);
+					}
+				}
+			}
 		}
 		int i = 1;
 		for( Car car : sortedCars )
@@ -299,14 +313,14 @@ public class MainAppController
 		{
 			initraceOverviewTable();
 		}
-		ObservableList<Car> list = getObservableCars();
+		ObservableList<Car> list = getObservableCars( sortedCars );
 		raceTable.setItems(list);
 	}
 	
-	private ObservableList<Car> getObservableCars() 
+	private ObservableList<Car> getObservableCars( ArrayList<Car> _cars ) 
 	{
 		ObservableList<Car> list = FXCollections.observableArrayList();// = ObservableList<RaceResult>
-		list.addAll( sortedCars );
+		list.addAll( _cars );
 		return list;
 	}
 
@@ -350,11 +364,11 @@ public class MainAppController
 		imageWorker.shutdown();
 	}
 	
-	public List<Car> getCarsSortedByQualifyingTimes() 
-	{
-		cars.sort(carComparatorByQualifying);
-		return cars;
-	}
+//	public List<Car> getCarsSortedByQualifyingTimes() 
+//	{
+//		cars.sort(carComparatorByQualifying);
+//		return cars;
+//	}
 	
 	private void initCarRaceTable()
 	{
@@ -435,5 +449,12 @@ public class MainAppController
 			return arg0.getTotalPoints().compareTo(arg1.getTotalPoints());
 		}
 	};
+	
+	private ArrayList<Car> getClonedCarList()
+	{
+		ArrayList<Car> sortedCars = new ArrayList<Car>();
+		sortedCars = (ArrayList<Car>) cars.clone();
+		return sortedCars;
+	}
 	
 }
