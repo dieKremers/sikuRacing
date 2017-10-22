@@ -217,8 +217,11 @@ public class MainAppController
 			{
 				Thread.sleep(100);
 			}
-			double lapTime = imageWorker.getFinishTime() - imageWorker.getStartTime();
-			car.setQualifyingTime(lapTime);
+			if( !imageWorker.isFehlstart() )
+			{
+				double lapTime = imageWorker.getFinishTime() - imageWorker.getStartTime();
+				car.setQualifyingTime(lapTime);				
+			}
 			updateMainFrame( car );
 		}		
 	}

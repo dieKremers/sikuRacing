@@ -34,7 +34,8 @@ public class ImageWorker
 	private String raceFinishedFile = "finished";
 	private String startTimeFile = "startTime";
     private boolean saveImages = true;
-    private double templateThreshold = 0.80;
+    private boolean logAllImages = true;
+    private double templateThreshold = 0.70;
     
 	private ArrayList<Car> cars = new ArrayList<Car>();
 	private Hashtable<Car, Mat> carMats = new Hashtable<Car, Mat>();
@@ -44,6 +45,7 @@ public class ImageWorker
 	private Double startTime = 0.0;
 	private Double finishTime = 0.0;
 	private boolean raceRunning = false;
+	private boolean fehlstart = false;
 	
 	private FilenameFilter pngFilter = new FilenameFilter() 
 	{
@@ -63,6 +65,7 @@ public class ImageWorker
 	
 	public void startRace( ArrayList<Car> _cars, boolean isQualifying )
 	{
+		fehlstart = false;
 		cars = _cars;
 		loadCarPictures();
 		raceRunning = true;
@@ -159,10 +162,20 @@ public class ImageWorker
 							finishTime = imgTime;
 							stopRace = true;
 						}
+						else if( file.getName().contains("fehlstart"))
+						{
+							stopRace = true;
+							setFehlstart(true);
+						}
 						else
 						{
 							Image value = new Image(file.toURI().toURL().toString());
 							pictureList.addPicture( OpenCvUtils.imageToMat( value, true ), imgTime );
+						}
+						if(logAllImages)
+						{
+							File logfile = new File("C:\\projekte\\sikuRacing\\logging\\all\\" + file.getName());
+							file.renameTo(logfile);
 						}
 						file.delete();
 					}
@@ -384,6 +397,14 @@ public class ImageWorker
 		}
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	public boolean isFehlstart() {
+		return fehlstart;
+	}
+
+	public void setFehlstart(boolean fehlstart) {
+		this.fehlstart = fehlstart;
 	}
 
 }
