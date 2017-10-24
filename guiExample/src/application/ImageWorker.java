@@ -10,6 +10,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -22,6 +25,7 @@ import javafx.scene.image.Image;
 
 public class ImageWorker 
 {
+	private Logger log = LogManager.getRootLogger();
 	private ScheduledExecutorService frameGrabberTimer;
 	private Runnable frameGrabber;
 	private ScheduledExecutorService imageWorkerTimer;
@@ -70,9 +74,11 @@ public class ImageWorker
 		loadCarPictures();
 		raceRunning = true;
 		if( isQualifying ) {
+			log.debug("Starting Qualifying");
 			currentRace = null;			
 		}
 		else {
+			log.debug("Starting Race");
 			currentRace = new Race( cars );	
 		}
 		frameGrabberTimer.scheduleAtFixedRate(frameGrabber, 0, raceTick, TimeUnit.MILLISECONDS);
@@ -311,6 +317,7 @@ public class ImageWorker
 		}
 		File file = new File(imageFolder+filename);
 		try {
+			log.debug("Creating File: " + file.getPath() );
 			file.createNewFile();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -323,10 +330,19 @@ public class ImageWorker
 		File startFile = new File(imageFolder + "\\" + raceStartFile);
 		File qualifyingFile = new File( imageFolder + "\\" + qualifyingStartFile);
 		File finishFile = new File(imageFolder + "\\" + raceFinishedFile );
-		
-		if( startFile.exists()) startFile.delete();
-		if( qualifyingFile.exists() ) qualifyingFile.delete();
-		if( finishFile.exists()) finishFile.delete();
+		log.debug("Stopping Raspi");
+		if( startFile.exists()) {
+			log.debug("Deleting File: " + startFile.getPath() );
+			startFile.delete();
+		}
+		if( qualifyingFile.exists() ) {
+			log.debug("Deleting File: " + qualifyingFile.getPath() );
+			qualifyingFile.delete();
+		}
+		if( finishFile.exists()) {
+			log.debug("Deleting File: " + finishFile.getPath() );
+			finishFile.delete();
+		}
 	}
 	
 	private MatchResult checkPictureForCar(Car car, Picture pic) 

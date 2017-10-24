@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Configuration>
+  <Appenders>
+        <!-- Console-Appender for 'stdout' -->
+        <Console name="ConsoleOut" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%p: %d{yyyy-MM-dd HH:mm:ss} %F:%L] %m%n"/>
+        </Console>
+        
+        <!-- RollingFile-Appender for daily logs -->
+        <RollingFile name="DailyFileAppender" 
+                     fileName="logs/SikuRacing.log" 
+                     filePattern="logs/SikuRacing-%d{yyyy-MM-dd}-%i.log"> <!-- ISO 8601 for better sorting -->
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="50 MB" />
+            </Policies>
+        </RollingFile>
+  </Appenders>
+  <Loggers>
+        <!-- level "FATAL" - Test emergencies: cancellation to avoid device damage. -->
+        <!-- level "ERROR" - Test errors: test failed. -->
+        <!-- level "WARN"  - Test warnings: unexpected condition, test unconclusive. -->
+        <!-- level "INFO"  - Test step logging: description of what is about to be checked next.. -->
+        <!-- level "DEBUG" - Test infrastructure logging: classloader, @Before/@After, etc.. -->
+        <!-- level "TRACE" - most detailed, not used yet.. -->
+        
+        <Root level="DEBUG"> 
+            <AppenderRef ref="ConsoleOut" />
+            <AppenderRef ref="DailyFileAppender" />
+        </Root> 
+  </Loggers>
+</Configuration>

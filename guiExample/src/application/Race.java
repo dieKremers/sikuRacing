@@ -8,11 +8,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class Race 
 {
+	private Logger log = LogManager.getRootLogger();
 	public Race(ArrayList<application.Car> cars) 
 	{
 		super();
+		log.debug("Creating new Race with " + cars.size() + " cars");
 		// Add all Cars to hash-table
 		for( Car car : cars )
 		{

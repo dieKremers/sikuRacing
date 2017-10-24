@@ -13,6 +13,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import exceptions.NoValueEnteredException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -39,6 +42,7 @@ import javafx.stage.Stage;
 
 public class MainAppController 
 {
+	Logger log = LogManager.getRootLogger();
 	private Stage primaryStage = null;
 	private ArrayList<Car> cars = new ArrayList<Car>();
 	private ArrayList<Car> sortedCars = new ArrayList<Car>();
@@ -88,6 +92,7 @@ public class MainAppController
 
 	@FXML
 	public void saveData() throws IOException {
+		log.debug("Button Save pressed");
 		 FileChooser fileChooser = new FileChooser();
 		 fileChooser.setTitle("Select Folder and File");
 		 fileChooser.getExtensionFilters().addAll(
@@ -208,10 +213,12 @@ public class MainAppController
 	@FXML
 	public void runQualifying() throws InterruptedException, MalformedURLException
 	{
+		log.info("Qualifying started");
 		int index  = carListView.getSelectionModel().getSelectedIndex();
 		if( index >= 0 )
 		{
 			Car car = cars.get(index);
+			log.debug("Call Image worker to start Qualifying");
 			imageWorker.startRace( cars, true );
 			while( imageWorker.isRaceRunning() )
 			{
@@ -220,10 +227,19 @@ public class MainAppController
 			if( !imageWorker.isFehlstart() )
 			{
 				double lapTime = imageWorker.getFinishTime() - imageWorker.getStartTime();
-				car.setQualifyingTime(lapTime);				
+				car.setQualifyingTime(lapTime);	
+				log.info("Car: " + car.getDriverName() + ": Add Qualifying Result: " + lapTime + "s" );
+			}
+			else
+			{
+				log.info("Fehlstart !!!");
 			}
 			updateMainFrame( car );
-		}		
+		}
+		else
+		{
+			log.warn("Qualifying not started because no car selected");
+		}
 	}
 	
 	@FXML
@@ -329,6 +345,7 @@ public class MainAppController
 
 	private void updateMainFrame(Car car) throws MalformedURLException 
 	{
+		log.debug("Updating Car Detail View");
 		driverNameTextField.setText( car.getDriverName() );
 		Image value;
 		value = new Image(car.getCarMask().toURI().toURL().toString());

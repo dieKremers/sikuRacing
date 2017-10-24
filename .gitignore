@@ -8,3 +8,7 @@ guiExample/build\.fxbuild
 guiExample/\.project
 
 logging/
+
+guiExample/logs/
+
+farbbilder/

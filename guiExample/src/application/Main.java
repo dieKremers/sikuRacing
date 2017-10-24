@@ -1,5 +1,7 @@
 package application;
 	
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.opencv.core.Core;
 
 import javafx.application.Application;
@@ -38,6 +40,8 @@ public class Main extends Application {
 	}
 	
 	public static void main(String[] args) {
+		Logger log = LogManager.getRootLogger();
+    	log.info("Configuration File Defined To Be :: "+ System.getProperty("log4j.configurationFile"));
 		launch(args);
 	}
 }
