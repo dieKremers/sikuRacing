@@ -105,10 +105,12 @@ public class ImageWorker
 		raceRunning = false;
 		stopRaspberry();
 		File[] files = imageFolder.listFiles( pngFilter );
-		while( files.length > 0 )
-		{
-			Thread.sleep(100);
-			files = imageFolder.listFiles( pngFilter );
+		if( files != null ) {
+			while( files.length > 0 )
+			{
+				Thread.sleep(100);
+				files = imageFolder.listFiles( pngFilter );
+			}			
 		}
 		frameGrabberTimer.scheduleAtFixedRate(frameGrabber, 0, idleTick, TimeUnit.MILLISECONDS);
 		imageWorkerTimer.scheduleAtFixedRate(imageWorker, 0, idleTick, TimeUnit.MILLISECONDS);				

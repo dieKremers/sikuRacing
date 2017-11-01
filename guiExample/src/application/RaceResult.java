@@ -6,6 +6,11 @@ import java.util.List;
 
 public class RaceResult implements Serializable
 {
+	@Override
+	public String toString() {
+		return "RaceResult [points=" + points + ", raceId=" + raceId + ", position=" + position + ", finishedLaps="
+				+ finishedLaps + ", lapTimes=" + lapTimes + "]";
+	}
 	/**
 	 * 
 	 */

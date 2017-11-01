@@ -13,6 +13,12 @@ import org.apache.logging.log4j.Logger;
 
 public class Race 
 {
+	@Override
+	public String toString() {
+		return "Race [startTime=" + startTime + ", results=" + results + ", ranking=" + ranking + ", points=" + points
+				+ "]";
+	}
+
 	private Logger log = LogManager.getRootLogger();
 	public Race(ArrayList<application.Car> cars) 
 	{
@@ -46,14 +52,18 @@ public class Race
 	
 	public void setStartTime( double value )
 	{
+		log.debug("Setting Race StartTime to " + value);
 		startTime = value;
 	}
 	
 	public int getLapsForCar( Car car )
 	{
-		if( results.containsKey(car) )
-			return results.get( car ).size()-1;
-		return 0;
+		int laps = 0;
+		if( results.containsKey(car) ) {
+			laps = results.get( car ).size()-1;	 		
+		}
+		log.debug("Returning laps for car " + car.getCarId() + ": " + laps);
+		return laps;
 	}
 	
 	public int getRankingOfCar( Car car )
@@ -78,18 +88,21 @@ public class Race
 
 		//1. Find cars that reached finish after first car finished 3 laps
 		//1.1 Find car that first fisnished 3rd lap
+		log.info("Generating Ranking for finished Race");
 		double fastestFinishTime = 0.0;
 		for( Car actCar : results.keySet())
 		{
 			if( results.get(actCar).size() == ( 4 ) )
 			{
 				double actFinishTime = results.get(actCar).get(3);
+				log.debug("Car " + actCar.getCarId() + " finished 3 Laps and finished after " + actFinishTime + "s");
 				if( fastestFinishTime == 0.0 || (actFinishTime < fastestFinishTime) )
 				{
 					fastestFinishTime = actFinishTime;
 				}
 			}
 		}
+		log.info("Fastest FinishTime of last Race: " + fastestFinishTime);
 		
 		//2. Create Lists with the Cars that finished 1,2,3 laps or did not finish
 		HashMap<Car, Double> carsWith3Laps = new HashMap<Car, Double>();
@@ -116,6 +129,10 @@ public class Race
 				carsNotFinished.add( actCar );
 			}
 		}
+		log.info("These cars finished 3 laps: " + carsWith3Laps );
+		log.info("These cars finished 2 laps: " + carsWith2Laps );
+		log.info("These cars finished 1 lap: " + carsWith1Lap );
+		log.info("These cars didn't finish: " + carsNotFinished );
 		//Sort each Map by Finish-Time
 		carsWith3Laps = (HashMap<application.Car, Double>) sortByValue(carsWith3Laps);
 		carsWith2Laps = (HashMap<application.Car, Double>) sortByValue(carsWith2Laps);
@@ -142,6 +159,7 @@ public class Race
 			ranking.put(actCar, rank + 1000 );  //rank bigger 1000 indicates: "not finished"
 			// don't increment rank because not finished cars do all have the same rank
 		}
+		log.info("Ranking of last race: " + ranking);
 		calculatePointsNotFinished( carsNotFinished.size() );
 	}
 	
@@ -167,6 +185,7 @@ public class Race
 		}
 		double pointsForNotFinished = pointsNotAssigned / numberOfcarsNotFinished;
 		points.put(1000, pointsForNotFinished );  //Rank 1000 is used for the points for not finished cars
+		log.debug("Cars not finished get " + pointsForNotFinished + " points");
 	}
 	
 	/**
@@ -181,12 +200,14 @@ public class Race
 	 */
 	public void addLap( Car car, double time )
 	{
+		log.debug("Trying to add time for car " + car.getCarId() + ": " + time);
 		if( results.containsKey( car ) )
 		{
 			ArrayList<Double> times = results.get(car);
 			int size = times.size();
 			if( size == 0 )
 			{
+				log.debug("Time added for car " + car.getCarId() + ": " + time);
 				times.add( time );
 			}
 			else
@@ -194,6 +215,7 @@ public class Race
 				double lastLapTime = times.get( size-1 );
 				if( (time - lastLapTime) > 1.0 ) //Rundenzeit nur eintragen wenn letzter Zeitstempel mehr als zwei Sekunden her ist
 				{
+					log.debug("Time added for car " + car.getCarId() + ": " + time);
 					times.add( time );
 				}
 			}
@@ -201,12 +223,16 @@ public class Race
 			{
 				results.put(car, times);
 			}
+			else {
+				log.debug("Time NOT added for car " + car.getCarId());
+			}
 		}
 		else
 		{
 			ArrayList<Double> times = new ArrayList<Double>();
 			times.add( time );
 			results.put( car,  times );
+			log.debug("Time added for car " + car.getCarId() + ": " + time);
 		}
 	}
 	

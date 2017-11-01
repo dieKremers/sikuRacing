@@ -4,6 +4,10 @@ import java.io.Serializable;
 
 public class QualifyingResult implements Serializable
 {
+	@Override
+	public String toString() {
+		return "QualifyingResult [round=" + round + ", time=" + time + "]";
+	}
 	/**
 	 * 
 	 */

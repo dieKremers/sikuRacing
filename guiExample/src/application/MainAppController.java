@@ -9,8 +9,6 @@ import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
@@ -285,7 +283,7 @@ public class MainAppController
 			result.setRaceId(raceCounter);
 			result.setPoints( raceResult.getPointsForCar( car ));
 			car.getRaces().add(result);
-			System.out.println( "Added Result to car: " + car.getDriverName() );
+			log.info( "Added Result to car: " + car.getDriverName() );
 		}
 		updateRaceTable();
 	}
@@ -302,19 +300,23 @@ public class MainAppController
 		sortedCars = getClonedCarList();
 		if( raceCounter == 0 )
 		{
-			sortedCars.sort(carComparatorByQualifying);
+			log.info("Sorting Cars by Qualifying because not race run yet");
+			sortedCars.sort(Comparators.carComparatorByQualifying);
 		}
 		else
 		{
-			sortedCars.sort(carComparatorByTotalPoints);
+			log.info("Sorting Cars by RaceResults ...");
+			sortedCars.sort(Comparators.carComparatorByTotalPoints);
 			Collections.reverse(sortedCars);
 			//nach gleichen Punkten suchen und in dem Fall den Wagen mit der besseren Zeit im Qualifying nach oben schieben
 			for( int i = 0; i < (sortedCars.size()-1); i++ )
 			{
 				if( sortedCars.get(i).getTotalPoints() == sortedCars.get(i+1).getTotalPoints() )
 				{
+					log.info("Car " + sortedCars.get(i).getCarId() + " and " + sortedCars.get(i+1).getCarId() + "have same points. Using Qualifying Times for Ranking");
 					if( sortedCars.get(i+1).getBestQualifyingTime() < sortedCars.get(i).getBestQualifyingTime() )
 					{
+						log.info("... switching Position of Cars with same points");
 						Car temp = sortedCars.get(i);
 						sortedCars.set(i, sortedCars.get(i+1));
 						sortedCars.set(i+1, temp);
@@ -328,10 +330,8 @@ public class MainAppController
 			car.setStartPosition( String.format("%2d", i) );
 			i++;
 		}
-		if( raceTable.getColumns().isEmpty() )
-		{
-			initraceOverviewTable();
-		}
+
+		initraceOverviewTable();
 		ObservableList<Car> list = getObservableCars( sortedCars );
 		raceTable.setItems(list);
 	}
@@ -456,19 +456,19 @@ public class MainAppController
 										
 	}
 	
-	Comparator<Car> carComparatorByQualifying = new Comparator<Car>(){
-		@Override
-		public int compare(Car arg0, Car arg1) {
-			return arg0.getBestQualifyingTime().compareTo(arg1.getBestQualifyingTime());
-		}
-	};
-	
-	Comparator<Car> carComparatorByTotalPoints = new Comparator<Car>(){
-		@Override
-		public int compare(Car arg0, Car arg1) {
-			return arg0.getTotalPoints().compareTo(arg1.getTotalPoints());
-		}
-	};
+//	Comparator<Car> carComparatorByQualifying = new Comparator<Car>(){
+//		@Override
+//		public int compare(Car arg0, Car arg1) {
+//			return arg0.getBestQualifyingTime().compareTo(arg1.getBestQualifyingTime());
+//		}
+//	};
+//	
+//	Comparator<Car> carComparatorByTotalPoints = new Comparator<Car>(){
+//		@Override
+//		public int compare(Car arg0, Car arg1) {
+//			return arg0.getTotalPoints().compareTo(arg1.getTotalPoints());
+//		}
+//	};
 	
 	private ArrayList<Car> getClonedCarList()
 	{

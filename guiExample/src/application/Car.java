@@ -6,11 +6,19 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public class Car implements Serializable 
 {
+	@Override
+	public String toString() {
+		return "Car [driverName=" + driverName + ", carMask=" + carMask + ", carId=" + carId + "]";
+	}
+	private Logger log = LogManager.getRootLogger();
 	/**
 	 * 
 	 */
@@ -31,7 +39,7 @@ public class Car implements Serializable
 	
 	private String driverName; //Name des Fahrers
 	private String carMask;
-	private int carId;
+	private int carId = -1;
 	private List<QualifyingResult> qualifyingTimes = new ArrayList<QualifyingResult>(); // Zeiten aus Qualifying
 	private List<RaceResult> raceResults = new ArrayList<RaceResult>(); // Liste mit Daten der einzelnen Rennen
 
@@ -39,23 +47,27 @@ public class Car implements Serializable
 		return driverName;
 	}
 	public void setDriverName(String driverName) {
+		log.debug("Car " + carId + ": Set Driver Name to: " + driverName );
 		this.driverName = driverName;
 	}
 	public File getCarMask() {
 		return new File(carMask);
 	}
 	public void setCarMask(File carMask) {
+		log.debug("Car " + carId + ": Set Mask to: " + carMask.getAbsolutePath() );
 		this.carMask = carMask.getAbsolutePath();
 	}
 	public int getCarId() {
 		return carId;
 	}
 	public void setCarId(int carId) {
+		log.debug("Car " + carId + ": Set Car ID to: " + carId );
 		this.carId = carId;
 	}
 	public List<QualifyingResult> getSortedQualifyingTimes() 
 	{
-		qualifyingTimes.sort(comparator);
+		qualifyingTimes.sort(Comparators.qualifyingResultComparator);
+		log.debug("Car " + carId + ": Returning sorted Qualifying Times: " + qualifyingTimes );
 		return qualifyingTimes;
 	}
 	
@@ -73,8 +85,10 @@ public class Car implements Serializable
 		QualifyingResult result = new QualifyingResult();
 		result.setRound("Runde " + (count+1) );
 		result.setTime(qualifyingTime);
+		log.debug("Car " + carId + ": Adding QualifyingResult: " + result );
 		qualifyingTimes.add(result);
 	}
+	
 	public List<RaceResult> getRaces() {
 		return raceResults;
 	}
@@ -89,15 +103,16 @@ public class Car implements Serializable
 		{
 			totalPoints += result.getPoints();
 		}
+		log.debug("Car " + carId + ": Returning total Points: " + totalPoints );
 		return totalPoints;
 	}
 	
-	private static Comparator<QualifyingResult> comparator = new Comparator<QualifyingResult>(){
-		@Override
-		public int compare(QualifyingResult arg0, QualifyingResult arg1) {
-			return arg0.getTime().compareTo(arg1.getTime());
-		}
-	};
+//	private static Comparator<QualifyingResult> comparator = new Comparator<QualifyingResult>(){
+//		@Override
+//		public int compare(QualifyingResult arg0, QualifyingResult arg1) {
+//			return arg0.getTime().compareTo(arg1.getTime());
+//		}
+//	};
 
 	
 	/** Getter to provide DataModel to carRaceTable
