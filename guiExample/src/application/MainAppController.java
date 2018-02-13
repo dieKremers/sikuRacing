@@ -126,6 +126,7 @@ public class MainAppController
 			}
 		 }
 		 raceCounter = cars.get(0).getRaces().size();
+		 imageWorker.setRacecounter(raceCounter);
 		 updateCarListView();
 	}
 	
@@ -298,31 +299,31 @@ public class MainAppController
 	private void updateRaceTable()
 	{
 		sortedCars = getClonedCarList();
-		if( raceCounter == 0 )
+		//sort By Qualifying Times first. The ensures that sorting by Points respects this also
+		log.info("Sorting Cars by Qualifying because not race run yet");
+		sortedCars.sort(Comparators.carComparatorByQualifying);
+		if( raceCounter > 0)
 		{
-			log.info("Sorting Cars by Qualifying because not race run yet");
-			sortedCars.sort(Comparators.carComparatorByQualifying);
-		}
-		else
-		{
+			Collections.reverse(sortedCars); //Point Comparator sorts in wrong order. Reverse Qualifying Sorting to make sure thats correctly respected in second sorting
 			log.info("Sorting Cars by RaceResults ...");
 			sortedCars.sort(Comparators.carComparatorByTotalPoints);
 			Collections.reverse(sortedCars);
-			//nach gleichen Punkten suchen und in dem Fall den Wagen mit der besseren Zeit im Qualifying nach oben schieben
-			for( int i = 0; i < (sortedCars.size()-1); i++ )
-			{
-				if( sortedCars.get(i).getTotalPoints() == sortedCars.get(i+1).getTotalPoints() )
-				{
-					log.info("Car " + sortedCars.get(i).getCarId() + " and " + sortedCars.get(i+1).getCarId() + "have same points. Using Qualifying Times for Ranking");
-					if( sortedCars.get(i+1).getBestQualifyingTime() < sortedCars.get(i).getBestQualifyingTime() )
-					{
-						log.info("... switching Position of Cars with same points");
-						Car temp = sortedCars.get(i);
-						sortedCars.set(i, sortedCars.get(i+1));
-						sortedCars.set(i+1, temp);
-					}
-				}
-			}
+//			next Block not needed anymore becaus we first sorted by Qualifying Times and then by points. 
+//			//nach gleichen Punkten suchen und in dem Fall den Wagen mit der besseren Zeit im Qualifying nach oben schieben
+//			for( int i = 0; i < (sortedCars.size()-1); i++ )
+//			{
+//				if( sortedCars.get(i).getTotalPoints() == sortedCars.get(i+1).getTotalPoints() )
+//				{
+//					log.info("Car " + sortedCars.get(i).getCarId() + " and " + sortedCars.get(i+1).getCarId() + "have same points. Using Qualifying Times for Ranking");
+//					if( sortedCars.get(i+1).getBestQualifyingTime() < sortedCars.get(i).getBestQualifyingTime() )
+//					{
+//						log.info("... switching Position of Cars with same points");
+//						Car temp = sortedCars.get(i);
+//						sortedCars.set(i, sortedCars.get(i+1));
+//						sortedCars.set(i+1, temp);
+//					}
+//				}
+//			}
 		}
 		int i = 1;
 		for( Car car : sortedCars )
