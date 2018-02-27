@@ -332,7 +332,9 @@ public class MainAppController
 			i++;
 		}
 
-		initraceOverviewTable();
+		if( raceTable.getColumns().isEmpty() ) {
+			initraceOverviewTable();			
+		}
 		ObservableList<Car> list = getObservableCars( sortedCars );
 		raceTable.setItems(list);
 	}

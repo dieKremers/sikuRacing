@@ -32,7 +32,8 @@ public class ImageWorker
 	private Runnable imageWorker;
 	Pictures pictureList = new Pictures();
 //	private ArrayList<Mat> frames = new ArrayList<Mat>();
-	public File imageFolder = new File("\\\\KREMERSPI\\ShareRaspberry");
+	//public File imageFolder = new File("\\\\KREMERSPI\\ShareRaspberry");
+	public File imageFolder = new File("C:\\projekte\\sikuRacing\\simulation");
 	private String qualifyingStartFile = "start_qualifying.txt";
 	private String raceStartFile = "start_race.txt";
 	private String raceFinishedFile = "finished";
@@ -66,6 +67,7 @@ public class ImageWorker
             return name.toLowerCase().endsWith(".png");
         }
 	};
+	private String logpath;
 	
 	public ImageWorker()
 	{
@@ -90,6 +92,14 @@ public class ImageWorker
 			log.debug("Starting Race");
 			racecounter++;
 			currentRace = new Race( cars );	
+		}
+		if( logAllImages ) {
+			logpath = "C:\\projekte\\sikuRacing\\logging\\all\\" + "race_"+racecounter +"\\";
+			File logfilePath = new File(logpath);
+			if( !logfilePath.exists() )
+			{
+				logfilePath.mkdir();
+			}
 		}
 		frameGrabberTimer.scheduleWithFixedDelay(frameGrabber, 0, raceTick, TimeUnit.MILLISECONDS);
 		imageWorkerTimer.scheduleWithFixedDelay(imageWorker, 0, raceTick, TimeUnit.MILLISECONDS);		
@@ -122,8 +132,8 @@ public class ImageWorker
 				files = imageFolder.listFiles( pngFilter );
 			}			
 		}
-		frameGrabberTimer.scheduleAtFixedRate(frameGrabber, 0, idleTick, TimeUnit.MILLISECONDS);
-		imageWorkerTimer.scheduleAtFixedRate(imageWorker, 0, idleTick, TimeUnit.MILLISECONDS);				
+		frameGrabberTimer.scheduleWithFixedDelay(frameGrabber, 0, idleTick, TimeUnit.MILLISECONDS);
+		imageWorkerTimer.scheduleWithFixedDelay(imageWorker, 0, idleTick, TimeUnit.MILLISECONDS);				
 	}
 	
 	public void shutdown()
@@ -198,7 +208,7 @@ public class ImageWorker
 						}
 						if(logAllImages)
 						{
-							File logfile = new File("C:\\projekte\\sikuRacing\\logging\\all\\" + "race_"+racecounter +"\\"+ file.getName());
+							File logfile = new File(logpath + file.getName());
 							file.renameTo(logfile);
 						}
 						log.info("Deliting File: " + file.getName() );
@@ -221,7 +231,7 @@ public class ImageWorker
 
 		};
 		frameGrabberTimer = Executors.newSingleThreadScheduledExecutor();
-        frameGrabberTimer.scheduleAtFixedRate(frameGrabber, 0, idleTick, TimeUnit.MILLISECONDS);
+        frameGrabberTimer.scheduleWithFixedDelay(frameGrabber, 0, idleTick, TimeUnit.MILLISECONDS);
 	}
 	
 	private void startImageWorker()
@@ -238,7 +248,7 @@ public class ImageWorker
 	        }
 		};
 		imageWorkerTimer = Executors.newSingleThreadScheduledExecutor();
-        imageWorkerTimer.scheduleAtFixedRate(imageWorker, 0, idleTick, TimeUnit.MILLISECONDS);
+        imageWorkerTimer.scheduleWithFixedDelay(imageWorker, 0, idleTick, TimeUnit.MILLISECONDS);
 	}
 	
 	public Double getTimeFromFilename(String name) 
