@@ -32,7 +32,7 @@ public class ImageWorker
 	private Runnable imageWorker;
 	Pictures pictureList = new Pictures();
 //	private ArrayList<Mat> frames = new ArrayList<Mat>();
-	//public File imageFolder = new File("\\\\KREMERSPI\\ShareRaspberry");
+//TODO	public File imageFolder = new File("\\\\KREMERSPI\\ShareRaspberry");
 	public File imageFolder = new File("C:\\projekte\\sikuRacing\\simulation");
 	private String qualifyingStartFile = "start_qualifying.txt";
 	private String raceStartFile = "start_race.txt";
@@ -45,8 +45,8 @@ public class ImageWorker
 	public ArrayList<Car> cars = new ArrayList<Car>();
 	Hashtable<Car, Mat> carMats = new Hashtable<Car, Mat>();
 	Race currentRace = null;
-	private static int idleTick = 250;
-	private static int raceTick = 50;
+	private static int idleTick = 1000;
+	private static int raceTick = 250;
 	public Double startTime = 0.0;
 	private Double finishTime = 0.0;
 	private boolean raceRunning = false;
@@ -102,7 +102,7 @@ public class ImageWorker
 			}
 		}
 		frameGrabberTimer.scheduleWithFixedDelay(frameGrabber, 0, raceTick, TimeUnit.MILLISECONDS);
-		imageWorkerTimer.scheduleWithFixedDelay(imageWorker, 0, raceTick, TimeUnit.MILLISECONDS);		
+		imageWorkerTimer.scheduleWithFixedDelay(imageWorker, 33, raceTick, TimeUnit.MILLISECONDS);		
 		startRaspberry( isQualifying );
 	}
 	
@@ -202,7 +202,7 @@ public class ImageWorker
 						}
 						else
 						{
-							log.debug("Found valid picture. Adding to List!!");
+							log.debug("Found valid picture (" + file.getName() + "). Adding to List!!");
 							Image value = new Image(file.toURI().toURL().toString());
 							pictureList.addPicture( OpenCvUtils.imageToMat( value, true ), imgTime );
 						}
@@ -211,7 +211,7 @@ public class ImageWorker
 							File logfile = new File(logpath + file.getName());
 							file.renameTo(logfile);
 						}
-						log.info("Deliting File: " + file.getName() );
+						log.info("Deleting File: " + file.getName() );
 						file.delete();
 					}
 					long dt = System.currentTimeMillis() - frameGrabberStartTime;
@@ -221,14 +221,11 @@ public class ImageWorker
 						stopRace();
 					}
 				} catch (MalformedURLException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
-
 		};
 		frameGrabberTimer = Executors.newSingleThreadScheduledExecutor();
         frameGrabberTimer.scheduleWithFixedDelay(frameGrabber, 0, idleTick, TimeUnit.MILLISECONDS);
@@ -282,7 +279,6 @@ public class ImageWorker
 			log.debug("Creating File: " + file.getPath() );
 			file.createNewFile();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -324,13 +320,10 @@ public class ImageWorker
 			}
 			return true;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -341,5 +334,4 @@ public class ImageWorker
 	public void setFehlstart(boolean fehlstart) {
 		this.fehlstart = fehlstart;
 	}
-
 }

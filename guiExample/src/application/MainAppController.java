@@ -337,6 +337,7 @@ public class MainAppController
 		}
 		ObservableList<Car> list = getObservableCars( sortedCars );
 		raceTable.setItems(list);
+		raceTable.refresh();
 	}
 	
 	private ObservableList<Car> getObservableCars( ArrayList<Car> _cars ) 
