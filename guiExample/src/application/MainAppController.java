@@ -18,7 +18,10 @@ import exceptions.NoValueEnteredException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -36,7 +39,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.paint.Paint;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public class MainAppController 
 {
@@ -275,6 +280,7 @@ public class MainAppController
 		textRaceStatus.setText("warte...");
 		textRaceStatus.setAlignment( Pos.CENTER);
 		Race raceResult = imageWorker.getCurrentRaceData();
+		checkRankingByUser(raceResult);
 		for( Car car : cars )
 		{
 			RaceResult result = new RaceResult();
@@ -481,4 +487,34 @@ public class MainAppController
 		return sortedCars;
 	}
 	
+	private void checkRankingByUser(Race race) 
+	{
+	    CheckRankingDialogController checkRankingDialog = null;
+	    try {
+	    	Stage stage = new Stage();
+	    	FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("CheckRankingDialog.fxml"));
+	        Parent root1 = (Parent) fxmlLoader.load();
+	        checkRankingDialog = fxmlLoader.getController();
+	        checkRankingDialog.setMyStage(stage);
+	        checkRankingDialog.setRanking( race.getRanking());
+	        stage.initModality(Modality.APPLICATION_MODAL);
+	        stage.initStyle(StageStyle.DECORATED);
+	        stage.setTitle("Check Ranking Dialog");
+	        stage.setScene(new Scene(root1));  
+	        stage.showAndWait();	
+	        race.setRanking(checkRankingDialog.getUpdatedRanking());;
+	    }
+	    catch(IOException e) {
+	    	log.error(e,  e);
+	    }
+		
+		
+		
+
+//	  //  Stage stage = new Stage();
+//	    stage.setScene(new Scene(checkRankingDialog));
+//	    stage.initOwner(primaryStage);
+//	  //  stage.initModality(Modality.APPLICATION_MODAL);
+//	    stage.showAndWait();
+	}	
 }
