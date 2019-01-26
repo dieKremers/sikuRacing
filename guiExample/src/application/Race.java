@@ -6,10 +6,16 @@ import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
 
 public class Race 
 {
@@ -160,9 +166,10 @@ public class Race
 			// don't increment rank because not finished cars do all have the same rank
 		}
 		log.info("Ranking of last race: " + ranking);
-		calculatePointsNotFinished( carsNotFinished.size() );
+		calculatePointsNotFinished(); //;carsNotFinished.size() );
 	}
 	
+
 	/**
 	 * This method calculates how many points will be given to the cars that not finished.
 	 * Rules: 
@@ -175,9 +182,16 @@ public class Race
 	 * 
 	 * @param numberOfcarsNotFinished
 	 */
-	private void calculatePointsNotFinished(int numberOfcarsNotFinished )
+	private void calculatePointsNotFinished() //int numberOfcarsNotFinished )
 	{
-		int numberOfCars = results.keySet().size();
+		int numberOfcarsNotFinished = 0;;
+		for (Entry<application.Car, Integer> entry : ranking.entrySet()) {
+			if(entry.getValue() >= 1000) {
+				numberOfcarsNotFinished++;
+			}			
+		}
+		
+		int numberOfCars = ranking.keySet().size();
 		double pointsNotAssigned = 0.0;
 		for( int i = (numberOfCars-numberOfcarsNotFinished+1); i<=numberOfCars; i++)
 		{
@@ -287,5 +301,18 @@ public class Race
 			return points.get(1000);
 		}
 		return points.get(rank);
+	}
+	
+	public Hashtable<Car, Integer> getRanking() {
+		if( ranking.isEmpty() )
+		{
+			generateRanking();
+		}
+		return ranking;
+	}
+
+	public void setRanking(Hashtable<Car, Integer> ranking) {
+		this.ranking = ranking;
+		calculatePointsNotFinished();
 	}
 }
