@@ -32,8 +32,8 @@ public class ImageWorker
 	private Runnable imageWorker;
 	Pictures pictureList = new Pictures();
 //	private ArrayList<Mat> frames = new ArrayList<Mat>();
-//TODO	public File imageFolder = new File("\\\\KREMERSPI\\ShareRaspberry");
-	public File imageFolder = new File("C:\\projekte\\sikuRacing\\simulation");
+  	public File imageFolder = new File("\\\\KREMERSPI\\ShareRaspberry");
+	//public File imageFolder = new File("C:\\projekte\\sikuRacing\\simulation");
 	private String qualifyingStartFile = "start_qualifying.txt";
 	private String raceStartFile = "start_race.txt";
 	private String raceFinishedFile = "finished";
